@@ -1,5 +1,5 @@
 import pendulum
-from timeline.timeline import Timeline, Story
+from timeline.timeline import Timeline, Story, Entry
 
 
 ## Timeline Class ##
@@ -26,3 +26,14 @@ def test_story_init():
     assert story2.start_date == pendulum.datetime(1994, 2, 18, tz="local")
     assert story2.title == "My first birthday"
     assert len(timeline.stories) == 2
+
+
+## Entry Class ##
+def test_entry_init():
+    """Test initilization options of Entry"""
+    timeline = Timeline()
+    story = Story(timeline=timeline, start_date="1993-02-18", title="I was born")
+    entry1 = Entry(story=story, body="I was born in CA on a rainy February morning.")
+    assert len(story.entries) == 1
+    assert entry1.body == "I was born in CA on a rainy February morning."
+    assert entry1.date == pendulum.datetime(1993, 2, 18, tz="local")
