@@ -1,5 +1,5 @@
 import pendulum
-from timeline.timeline import Timeline, Story, Entry
+from timeline.core import Timeline, Story, Entry
 
 
 ## Timeline Class ##

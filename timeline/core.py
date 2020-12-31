@@ -1,14 +1,8 @@
+"""Core API for Timeline Journaling application"""
 import pendulum
 from uuid import uuid4 as uuid
 
-
-def today_str():
-    """Returns today's date formatted as datetime string."""
-    return pendulum.today().to_datetime_string()
-
-def parse_datetime_local_tz(datetime_str):
-    """Parse datetime string to pendulum.datetime in local timezone."""
-    return pendulum.parse(datetime_str, tz="local")
+from .helpers import today_str, parse_datetime_local_tz
 
 
 class Timeline:
