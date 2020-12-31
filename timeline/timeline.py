@@ -26,7 +26,7 @@ class Story:
     ):
         self.timeline = timeline
         self.timeline.stories.add(self)
-        self.entries = []
+        self.entries = set()
         self.uuid = uuid()
         self.start_date = pendulum.parse(start_date, tz="local")
         self.title = title
@@ -35,7 +35,15 @@ class Story:
         return f'<uuid: {self.uuid} title: "{self.title}" num_entries: {len(self.entries)}>'
 
 
+# class Entry:
+#     """An component of a story. Where all content is stored/linked"""
+
+#     def __init__(self):
+#         pass
+
+
+
 # NOTE: dev only
-if __name__ == "__main__":
-    t = Timeline()
-    s = Story(t)
+# if __name__ == "__main__":
+#     t = Timeline()
+#     s = Story(t)
