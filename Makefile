@@ -6,4 +6,4 @@ install:
 	pip install --upgrade .
 
 test:
-	PYTHONPATH=. pytest --cov=notebook tests/
+	PYTHONPATH=. pytest --cov=timeline tests/
