@@ -15,14 +15,15 @@ def test_timeline_init():
 ## Story Class ##
 def test_story_init():
     """Test initilization options of Story"""
+    # import pdb; pdb.set_trace()
     timeline = Timeline()
-    story1 = Story(timeline=timeline)
+    story1, _ = timeline.add_story()
     assert story1.start_date == pendulum.today()
     assert story1.title == pendulum.today().to_datetime_string()
-    assert str(story1).endswith("num_entries: 0>")
+    assert str(story1).endswith("num_entries: 1>")
     assert len(timeline.stories) == 1
 
-    story2 = Story(timeline=timeline, start_date="1994-02-18", title="My first birthday")
+    story2, _ = timeline.add_story(start_date="1994-02-18", title="My first birthday")
     assert story2.start_date == pendulum.datetime(1994, 2, 18, tz="local")
     assert story2.title == "My first birthday"
     assert len(timeline.stories) == 2
@@ -32,8 +33,7 @@ def test_story_init():
 def test_entry_init():
     """Test initilization options of Entry"""
     timeline = Timeline()
-    story = Story(timeline=timeline, start_date="1993-02-18", title="I was born")
-    entry1 = Entry(story=story, body="I was born in CA on a rainy February morning.")
-    assert len(story.entries) == 1
-    assert entry1.body == "I was born in CA on a rainy February morning."
-    assert entry1.date == pendulum.datetime(1993, 2, 18, tz="local")
+    story, default_entry = timeline.add_story(start_date="1993-02-18", title="The beginning")
+    assert len(story.list_entries()) == 1
+    story.add_entry(date="2021-01-01", body="The first day of the new year.")
+    assert len(story.list_entries()) == 2
