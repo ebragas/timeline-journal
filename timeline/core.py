@@ -13,8 +13,7 @@ class Timeline:
         self.start_date = parse_datetime_local_tz(start_date)
 
     def add_story(self, *args, **kwargs):
-        """Create a new story.
-        Return story and default first entry."""
+        """Create a new story. Return story and default first entry."""
         story = Story(self, *args, **kwargs)
         self.stories.append(story)
         return story, story.entries[0]  # TODO: provide get() or magic method for slicing
