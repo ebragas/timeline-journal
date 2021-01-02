@@ -86,7 +86,10 @@ class Menu:
         raise NotImplementedError
 
     def delete_story(self):
+        # Search for story
+        # Show storie(s) to be deleted
         # TODO: use Confirm.ask()
+        # Delete
         raise NotImplementedError
 
     def quit(self):

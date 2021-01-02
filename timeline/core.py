@@ -18,6 +18,11 @@ class Timeline:
         self._stories.append(story)
         return story, story.entries[0]  # TODO: provide get() or magic method for slicing
 
+    def delete_story(self, story: Story):
+        """Delete story by id suffix. Doesn't require the entire id as long as 
+        it's unique"""
+        raise NotImplementedError   
+
     @property
     def stories(self):
         """List all available stories.
