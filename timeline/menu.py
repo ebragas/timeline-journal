@@ -2,8 +2,10 @@
 import sys
 from textwrap import dedent
 
+import pendulum
 from rich.console import Console
 from rich.prompt import Prompt, Confirm
+from rich.table import Table
 
 from core import Timeline
 
@@ -13,9 +15,9 @@ prompt = Prompt()
 
 class Menu:
     def __init__(self):
-        
+
         self.timeline = Timeline()
-        
+
         self.options = {
             "1": self.show_stories,
             "2": self.search_stories,
@@ -43,6 +45,7 @@ class Menu:
         while True:
             self.display_menu()
             choice = prompt.ask("Choose an option", choices=self.options.keys())
+            console.print()
             action = self.options.get(choice)
             action()
 
@@ -50,8 +53,20 @@ class Menu:
         """Show all or just the provided stories."""
         if not stories:
             stories = self.timeline.stories
+
+        table = Table(title="Stories")
+        table.add_column("ID", justify="right", style="cyan", no_wrap=True)
+        table.add_column("Start Date", justify="right", style="green")
+        table.add_column("Title", style="magenta")
+
         for story in stories:
-            console.print(story)
+            table.add_row(
+                str(story.uuid),
+                story.start_date.to_datetime_string(),
+                story.title
+            )
+
+        console.print(table)
 
     def search_stories(self):
         raise NotImplementedError
@@ -59,9 +74,10 @@ class Menu:
     def add_story(self):
         """Create new story and call up editor (Vim)
         https://stackoverflow.com/questions/6309587/call-up-an-editor-vim-from-a-python-script"""
-        start_date = prompt.ask("Start Date")
-        title = prompt.ask("Title")
-        story = self.timeline.add_story(start_date=start_date, title=title)
+        default = pendulum.now().to_date_string()
+        start_date = prompt.ask(f"Start Date (default: {default})")
+        title = prompt.ask(f"Title (default: {default})")
+        story = self.timeline.add_story(start_date=start_date, title=title)  # TODO: default everything to None and use conditionals to "default"
 
         # content = self.editor()
         # story.entries.edit()
@@ -72,9 +88,9 @@ class Menu:
     def delete_story(self):
         # TODO: use Confirm.ask()
         raise NotImplementedError
-    
+
     def quit(self):
-        console.print("Thank you, come again.")
+        console.print("Thank you, come again.\n")
         sys.exit()
 
 
