@@ -86,7 +86,8 @@ class Menu:
         console.print()
         for entry in story.entries:
             console.print(f"Date:\t{entry.date.to_datetime_string()}")
-            console.print(f"Body:\n{entry.body}")
+            console.print(f"Body:\n{entry.body}\n")
+        console.rule()
 
     def search_stories(self):
         raise NotImplementedError
@@ -97,27 +98,31 @@ class Menu:
         default = pendulum.now().to_date_string()
         start_date = prompt.ask(f"Start Date (default: {default})")
         title = prompt.ask(f"Title (default: {default})")
-        story = self.timeline.add_story(start_date=start_date, title=title)  # TODO: default everything to None and use conditionals to "default"
+        
+        story, default_entry = self.timeline.add_story(
+            start_date=start_date, 
+            title=title
+        )
+        default_entry.body = self.open_editor(default_entry.body)
 
-        # content = self.editor()
-        # story.entries.edit()
-
-    def interactive_edit_story(self):
-        """Edit a story by editing the entry(s)
-        TODO: consider decomposing basic edit method and editor method"""
-        story_id = prompt.ask("Story ID (last 7 letters sufficient)")
-        story = self._find_story_by_id(story_id)
-
-        entry = story.entries[0]
-        # TODO: determine how to handle editing multiple entries later
-
+    def open_editor(self, initial_text: str = None):
+        """Opens default editor starting with initial_text and returns edited
+        text on editor closure"""
         with NamedTemporaryFile(suffix=".tmp") as tf:
-            tf.write(entry.body.encode("utf-8"))
+            tf.write(initial_text.encode("utf-8"))
             tf.flush()
             call([EDITOR, tf.name])
             text = open(tf.name, "r").read()
 
-        entry.body = text
+        return text
+
+    def interactive_edit_story(self, story_id: str = None):
+        """Edit a story by editing the entry(s)."""
+        if not story_id:
+            story_id = prompt.ask("Story ID (last 7 letters sufficient)")
+        story = self._find_story_by_id(story_id)
+        entry = story.entries[0]  # TODO: determine how to edit multiple entries later
+        entry.body = self.open_editor(entry.body)
 
     def delete_story(self):
         # Search for story

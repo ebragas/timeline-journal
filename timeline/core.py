@@ -68,7 +68,7 @@ class Story:
 class Entry:
     """An component of a story. Where all content is stored/linked"""
 
-    def __init__(self, story: Story, date: str, body: str = "Such empty :("):
+    def __init__(self, story: Story, date: str, body: str = ""):
         self.story = story
         self.body = body
         self.uuid = uuid()
