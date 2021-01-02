@@ -32,13 +32,15 @@ class Story:
     def __init__(
         self,
         timeline: Timeline,
-        start_date: str = today_str(),
-        title: str = today_str(),
+        start_date: str = None,
+        title: str = None,
     ):
         self.timeline = timeline
         self.uuid = uuid()
+        title = today_str() if not title else title
         self.title = title
         # TODO: make property; get from min entry date
+        start_date = today_str() if not start_date else start_date
         self.start_date = parse_datetime_local_tz(start_date)
         self._entries = []
         self._entries.append(Entry(self, date=start_date))  # default first entry
