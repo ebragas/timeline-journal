@@ -9,19 +9,20 @@ class Timeline:
     """The container for your stories"""
 
     def __init__(self, start_date: str = today_str()):
-        self.stories = []
+        self._stories = []
         self.start_date = parse_datetime_local_tz(start_date)
 
     def add_story(self, *args, **kwargs):
         """Create a new story. Return story and default first entry."""
         story = Story(self, *args, **kwargs)
-        self.stories.append(story)
+        self._stories.append(story)
         return story, story.entries[0]  # TODO: provide get() or magic method for slicing
 
-    def list_stories(self):
+    @property
+    def stories(self):
         """List all available stories.
         # NOTE: Should merge with `search()` and provide no filter?"""
-        return list(self.stories)
+        return list(self._stories)
 
 
 class Story:
@@ -39,17 +40,18 @@ class Story:
         self.title = title
         # TODO: make property; get from min entry date
         self.start_date = parse_datetime_local_tz(start_date)
-        self.entries = []
-        self.entries.append(Entry(self, date=start_date))  # default first entry
+        self._entries = []
+        self._entries.append(Entry(self, date=start_date))  # default first entry
 
-    def list_entries(self):
+    @property
+    def entries(self):
         """Return all entries
         # TODO: sort by date"""
-        return list(self.entries)
+        return list(self._entries)
 
     def add_entry(self, *args, **kwargs):
         entry = Entry(story=self, *args, **kwargs)
-        self.entries.append(entry)
+        self._entries.append(entry)
         return entry
 
     def __repr__(self):
