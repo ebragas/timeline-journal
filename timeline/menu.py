@@ -1,6 +1,9 @@
 """Interactive menu"""
 import sys
+import os
 from textwrap import dedent
+from tempfile import NamedTemporaryFile
+from subprocess import call
 
 import pendulum
 from rich.console import Console
@@ -9,6 +12,8 @@ from rich.table import Table
 
 from core import Timeline
 
+
+EDITOR = os.environ.get('EDITOR', 'vim')
 
 console = Console()
 prompt = Prompt()
@@ -20,10 +25,11 @@ class Menu:
 
         self.options = {
             "1": self.show_stories,
-            "2": self.search_stories,
-            "3": self.add_story,
-            "4": self.edit_story,
-            "5": self.delete_story,
+            "2": self.display_story,
+            "3": self.search_stories,
+            "4": self.add_story,
+            "5": self.interactive_edit_story,
+            "6": self.delete_story,
             "0": self.quit
         }
 
@@ -32,10 +38,11 @@ class Menu:
         menu = """
         Main Menu:
         1) Show all stories
-        2) Search stories
-        3) Add story
-        4) Edit story
-        5) Delete story
+        2) Read story
+        3) Search stories
+        4) Add story
+        5) Edit story
+        6) Delete story
         0) Quit
         """
         console.print(dedent(menu), justify="left")
@@ -68,6 +75,19 @@ class Menu:
 
         console.print(table)
 
+    def display_story(self):
+        """Print to terminal."""
+        story_id = prompt.ask("Story ID (last 7 letters sufficient)")
+        story = self._find_story_by_id(story_id)
+        
+        # console.print("\nTitle:\t{story.title}")
+        console.print()
+        console.rule(story.title)
+        console.print()
+        for entry in story.entries:
+            console.print(f"Date:\t{entry.date.to_datetime_string()}")
+            console.print(f"Body:\n{entry.body}")
+
     def search_stories(self):
         raise NotImplementedError
 
@@ -82,8 +102,22 @@ class Menu:
         # content = self.editor()
         # story.entries.edit()
 
-    def edit_story(self):
-        raise NotImplementedError
+    def interactive_edit_story(self):
+        """Edit a story by editing the entry(s)
+        TODO: consider decomposing basic edit method and editor method"""
+        story_id = prompt.ask("Story ID (last 7 letters sufficient)")
+        story = self._find_story_by_id(story_id)
+
+        entry = story.entries[0]
+        # TODO: determine how to handle editing multiple entries later
+
+        with NamedTemporaryFile(suffix=".tmp") as tf:
+            tf.write(entry.body.encode("utf-8"))
+            tf.flush()
+            call([EDITOR, tf.name])
+            text = open(tf.name, "r").read()
+
+        entry.body = text
 
     def delete_story(self):
         # Search for story
@@ -91,6 +125,18 @@ class Menu:
         # TODO: use Confirm.ask()
         # Delete
         raise NotImplementedError
+
+    def _find_story_by_id(self, story_id: str):
+        """Return first matching story by story_id.
+        Matches based on ID string ending"""
+        for story in self.timeline.stories:
+            if str(story.uuid).endswith(story_id):
+                return story
+
+    def _editor(self, text_to_edit: str = None):
+        """Open the users default editor with the provided text (if any), allow
+        them to edit, then return the contents."""
+        
 
     def quit(self):
         console.print("Thank you, come again.\n")
