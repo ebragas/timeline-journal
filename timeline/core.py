@@ -2,7 +2,7 @@
 import pendulum
 from uuid import uuid4 as uuid
 
-from helpers import today_str, parse_datetime_local_tz
+from timeline.helpers import today_str, parse_datetime_local_tz
 
 
 class Timeline:
