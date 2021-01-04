@@ -2,7 +2,7 @@
 import pendulum
 from uuid import uuid4 as uuid
 
-from helpers import today_str, parse_datetime_local_tz
+from .helpers import today_str, parse_datetime_local_tz
 
 
 class Timeline:
@@ -62,7 +62,7 @@ class Story:
         return entry
 
     def __repr__(self):
-        return f'<uuid: {self.uuid} title: "{self.title}" num_entries: {len(self.entries)}>'
+        return f'<Story uuid: {self.uuid} title: "{self.title}" num_entries: {len(self.entries)}>'
 
 
 class Entry:
@@ -75,22 +75,19 @@ class Entry:
         self.date = parse_datetime_local_tz(date) if date else pendulum.today()
 
     def __repr__(self):
-        return f'<uuid: {self.uuid} date: {self.date.to_datetime_string()} body: "{self.body[:10]}">'
+        return f'<Entry uuid: {self.uuid} date: {self.date.to_datetime_string()} body: "{self.body[:10]}">'
 
 
-# # NOTE: dev only
-# if __name__ == "__main__":
+# NOTE: dev only
+if __name__ == "__main__":
 
-#     from rich.console import Console
+    from rich.console import Console
 
-#     console = Console()
+    console = Console()
 
-#     t = Timeline()
-#     t.add_story('2020-02-18', '27th birthday')
-#     t.add_story()
+    t = Timeline()
+    t.add_story('2020-02-18', '27th birthday')
+    t.add_story()
 
-#     stories = t.list_stories()
-#     console.print(stories)
-
-#     entries = stories[0].list_entries()
-#     console.print(entries)
+    console.print(t.stories)
+    console.print(t.stories[0].entries)
