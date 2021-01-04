@@ -1,5 +1,8 @@
-import pendulum
+import sys
+import os
+
 from timeline.core import Timeline, Story, Entry
+import pendulum
 
 
 ## Timeline Class ##
