@@ -103,9 +103,9 @@ class Menu:
             start_date=start_date, 
             title=title
         )
-        default_entry.body = self.open_editor(default_entry.body)
+        default_entry.body = self._editor(default_entry.body)
 
-    def open_editor(self, initial_text: str = None):
+    def _editor(self, initial_text: str = None):
         """Opens default editor starting with initial_text and returns edited
         text on editor closure"""
         with NamedTemporaryFile(suffix=".tmp") as tf:
@@ -122,7 +122,7 @@ class Menu:
             story_id = prompt.ask("Story ID (last 7 letters sufficient)")
         story = self._find_story_by_id(story_id)
         entry = story.entries[0]  # TODO: determine how to edit multiple entries later
-        entry.body = self.open_editor(entry.body)
+        entry.body = self._editor(entry.body)
 
     def delete_story(self):
         # Search for story
@@ -136,12 +136,7 @@ class Menu:
         Matches based on ID string ending"""
         for story in self.timeline.stories:
             if str(story.uuid).endswith(story_id):
-                return story
-
-    def _editor(self, text_to_edit: str = None):
-        """Open the users default editor with the provided text (if any), allow
-        them to edit, then return the contents."""
-        
+                return story    
 
     def quit(self):
         console.print("Thank you, come again.\n")
