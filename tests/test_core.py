@@ -1,9 +1,15 @@
 import sys
 import os
+import pytest
 
 from timeline.core import Timeline, Story, Entry
 import pendulum
 
+
+
+@pytest.fixture
+def empty_timeline_fixture():
+    return Timeline()
 
 ## Timeline Class ##
 def test_timeline_init():
@@ -16,10 +22,10 @@ def test_timeline_init():
 
 
 ## Story Class ##
-def test_story_init():
+def test_story_init(empty_timeline_fixture):
     """Test initilization options of Story"""
     # import pdb; pdb.set_trace()
-    timeline = Timeline()
+    timeline = empty_timeline_fixture
     story1, _ = timeline.add_story()
     assert story1.start_date == pendulum.today()
     assert story1.title == pendulum.today().to_datetime_string()
@@ -33,10 +39,10 @@ def test_story_init():
 
 
 ## Entry Class ##
-def test_entry_init():
+def test_entry_init(empty_timeline_fixture):
     """Test initilization options of Entry"""
-    timeline = Timeline()
+    timeline = empty_timeline_fixture
     story, default_entry = timeline.add_story(start_date="1993-02-18", title="The beginning")
-    assert len(story.list_entries()) == 1
+    assert len(story.entries) == 1
     story.add_entry(date="2021-01-01", body="The first day of the new year.")
-    assert len(story.list_entries()) == 2
+    assert len(story.entries) == 2

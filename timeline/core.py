@@ -8,8 +8,9 @@ from timeline.helpers import today_str, parse_datetime_local_tz
 class Timeline:
     """The container for your stories"""
 
-    def __init__(self, start_date: str = today_str()):
+    def __init__(self, start_date: str = None):
         self._stories = []
+        start_date = start_date if start_date else today_str()
         self.start_date = parse_datetime_local_tz(start_date)
 
     def add_story(self, *args, **kwargs):
