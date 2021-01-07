@@ -34,15 +34,26 @@ def test_default_entry(timeline_w_blank_entry_fixture):
 def test_default_timeline():
     assert isinstance(default_timeline, Timeline)
 
-def test_timeline_add_story(empty_timeline_fixture):
+@pytest.fixture(params=[
+    {},
+    {"start_dt": "1993-02-18"},
+    {"title": "test title"},
+    {"body": "test body"},
+])
+def story_params_fixture(request):
+    yield request.param
+
+def test_timeline_add_story(empty_timeline_fixture, story_params_fixture):
     """Test initialization options of Timeline"""
     t = empty_timeline_fixture
     new_entry = t.add_entry(
-        start_dt="1993-02-18",
-        # default end_dt same as start_dt
-        title="Day 1",
-        body="The day I was born."
+        **story_params_fixture
     )
+    # type checking
     assert isinstance(new_entry, Entry)
     assert isinstance(new_entry.created_dt, pendulum.DateTime)
     assert new_entry.created_dt == new_entry.modified_dt
+
+    # expected outputs
+    assert new_entry.title == story_params_fixture.get("title", new_entry.start_dt.to_day_datetime_string())
+    assert new_entry.body == story_params_fixture.get("body")
