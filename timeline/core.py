@@ -26,6 +26,10 @@ class Timeline:
         it's unique"""
         raise NotImplementedError
 
+    def search_entries(self, pattern: str):
+        """Return all matching Entries"""
+        return [entry for entry in self.entries if entry.is_match(pattern)]
+
 
 class Entry:
     """An entry on the timeline; where all content is stored and linked."""
@@ -48,7 +52,8 @@ class Entry:
 
     def is_match(self, pattern):
         """Return True if Entry body matches regex pattern, else False"""
-        raise NotImplementedError
+        # TODO: implement regex match
+        return False
 
     def __repr__(self):
         return f'<Entry uuid: {self.uuid} start_dt: {self.start_dt.to_datetime_string()} body: "{self.body}">'
