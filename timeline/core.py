@@ -46,20 +46,9 @@ class Entry:
         self.body = body
         self.uuid = str(uuid())
 
+    def is_match(self, pattern):
+        """Return True if Entry body matches regex pattern, else False"""
+        raise NotImplementedError
+
     def __repr__(self):
         return f'<Entry uuid: {self.uuid} start_dt: {self.start_dt.to_datetime_string()} body: "{self.body}">'
-
-
-# NOTE: dev only
-if __name__ == "__main__":
-
-    from rich.console import Console
-
-    console = Console()
-
-    t = Timeline()
-    t.add_story('2020-02-18', '27th birthday')
-    t.add_story()
-
-    console.print(t.stories)
-    console.print(t.stories[0].entries)
