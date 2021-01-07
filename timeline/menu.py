@@ -11,6 +11,7 @@ from rich.prompt import Prompt, Confirm
 from rich.table import Table
 
 from core import Timeline
+from exceptions import EntryNotFoundException
 
 
 EDITOR = os.environ.get('EDITOR', 'vim')
@@ -24,12 +25,12 @@ class Menu:
         self.timeline = Timeline()
 
         self.options = {
-            "1": self.show_stories,
-            "2": self.display_story,
-            "3": self.search_stories,
-            "4": self.add_story,
-            "5": self.interactive_edit_story,
-            "6": self.delete_story,
+            "1": self.show_entries,
+            "2": self.display_entry,
+            "3": self.search_entries,
+            "4": self.add_entry,
+            "5": self.interactive_edit_entry,
+            "6": self.delete_entry,
             "0": self.quit
         }
 
@@ -37,12 +38,12 @@ class Menu:
         """Print menu to terminal."""
         menu = """
         Main Menu:
-        1) Show all stories
-        2) Read story
-        3) Search stories
-        4) Add story
-        5) Edit story
-        6) Delete story
+        1) Show all entries
+        2) Read entry
+        3) Search entries
+        4) Add entry
+        5) Edit entry
+        6) Delete entry
         0) Quit
         """
         console.print(dedent(menu), justify="left")
@@ -56,58 +57,69 @@ class Menu:
             action = self.options.get(choice)
             action()
 
-    def show_stories(self, stories=None):
+    def show_entries(self, entries=None):
         """Show all or just the provided stories."""
-        if not stories:
-            stories = self.timeline.stories
+        if not entries:
+            entries = self.timeline.entries
 
-        table = Table(title="Stories")
+        table = Table(title="Entries")
         table.add_column("ID", justify="right", style="cyan", no_wrap=True)
         table.add_column("Start Date", justify="right", style="green")
+        table.add_column("End Date", justify="right", style="green")
         table.add_column("Title", style="magenta")
 
-        for story in stories:
+        for entry in entries:
             table.add_row(
-                str(story.uuid),
-                story.start_date.to_datetime_string(),
-                story.title
+                entry.uuid,
+                entry.start_dt.to_datetime_string(),
+                entry.end_dt.to_datetime_string(),
+                entry.title
             )
 
         console.print(table)
 
-    def display_story(self):
+    def display_entry(self, entry=None, entry_id: str=None):
         """Print to terminal."""
-        story_id = prompt.ask("Story ID (last 7 letters sufficient)")
-        story = self._find_story_by_id(story_id)
+        if not entry:
+            if not entry_id:
+                entry_id = prompt.ask("Entry ID (last 7 letters sufficient)")
+                try:
+                    entry = self._find_entry_by_id(entry_id)
+                except EntryNotFoundException as e:
+                    console.print(e.args[0])
+                    return
         
-        # console.print("\nTitle:\t{story.title}")
         console.print()
-        console.rule(story.title)
+        console.rule(entry.title)
         console.print()
-        for entry in story.entries:
-            console.print(f"Date:\t{entry.date.to_datetime_string()}")
-            console.print(f"Body:\n{entry.body}\n")
+        console.print(f"Start Date:\t{entry.start_dt.to_datetime_string()}")
+        console.print(f"End Date:\t{entry.end_dt.to_datetime_string()}")
+        console.print(f"Body:\n{entry.body}")
         console.rule()
 
-    def search_stories(self):
+    def search_entries(self):
+        # TODO: implement
         raise NotImplementedError
 
-    def add_story(self):
-        """Create new story and call up editor (Vim)
+    def add_entry(self):
+        """Create new entry and call up editor (Vim)
         https://stackoverflow.com/questions/6309587/call-up-an-editor-vim-from-a-python-script"""
-        default = pendulum.now().to_date_string()
-        start_date = prompt.ask(f"Start Date (default: {default})")
-        title = prompt.ask(f"Title (default: {default})")
+        entry_args = {}
+        entry_args["start_dt"] = prompt.ask(f"Start Date")
+        entry_args["title"] = prompt.ask(f"Title")
+        entry_args = {k: v for k, v in entry_args.items() if v}
         
-        story, default_entry = self.timeline.add_story(
-            start_date=start_date, 
-            title=title
+        entry = self.timeline.add_entry(
+            **entry_args
         )
-        default_entry.body = self._editor(default_entry.body)
+        entry.body = self._editor(entry.body)
+        self.display_entry(entry=entry)
 
-    def _editor(self, initial_text: str = None):
+    def _editor(self, initial_text: str=None):
         """Opens default editor starting with initial_text and returns edited
         text on editor closure"""
+        initial_text = initial_text or ""
+        
         with NamedTemporaryFile(suffix=".tmp") as tf:
             tf.write(initial_text.encode("utf-8"))
             tf.flush()
@@ -116,27 +128,30 @@ class Menu:
 
         return text
 
-    def interactive_edit_story(self, story_id: str = None):
-        """Edit a story by editing the entry(s)."""
-        if not story_id:
-            story_id = prompt.ask("Story ID (last 7 letters sufficient)")
-        story = self._find_story_by_id(story_id)
-        entry = story.entries[0]  # TODO: determine how to edit multiple entries later
-        entry.body = self._editor(entry.body)
+    def interactive_edit_entry(self, entry_id: str=None):
+        """Edit a entry by editing the entry(s)."""
+        if not entry_id:
+            entry_id = prompt.ask("entry ID (last 7 letters sufficient)")
+        try:
+            entry = self._find_entry_by_id(entry_id)
+            entry.body = self._editor(entry.body)
+        except EntryNotFoundException as e:
+            console.print(e.args[0])
 
-    def delete_story(self):
-        # Search for story
+    def delete_entry(self):
+        # Search for entry
         # Show storie(s) to be deleted
         # TODO: use Confirm.ask()
         # Delete
         raise NotImplementedError
 
-    def _find_story_by_id(self, story_id: str):
-        """Return first matching story by story_id.
+    def _find_entry_by_id(self, entry_id: str):
+        """Return first matching entry by entry_id.
         Matches based on ID string ending"""
-        for story in self.timeline.stories:
-            if str(story.uuid).endswith(story_id):
-                return story    
+        try:
+            return self.timeline._entries[entry_id]
+        except KeyError as e:
+            raise EntryNotFoundException(f"No Entry found with identifier matching: {entry_id}")
 
     def quit(self):
         console.print("Thank you, come again.\n")

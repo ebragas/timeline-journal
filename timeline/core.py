@@ -2,81 +2,52 @@
 import pendulum
 from uuid import uuid4 as uuid
 
-from timeline.helpers import today_str, parse_datetime_local_tz
+from timeline.helpers import now_str, today_str, parse_dt_local_tz
 
 
 class Timeline:
     """The container for your stories"""
 
-    def __init__(self, start_date: str = None):
-        self._stories = []
-        start_date = start_date if start_date else today_str()
-        self.start_date = parse_datetime_local_tz(start_date)
+    def __init__(self):
+        self._entries = {}
 
-    def add_story(self, *args, **kwargs):
+    @property
+    def entries(self):
+        return list(self._entries.values())
+    
+    def add_entry(self, *args, **kwargs):
         """Create a new story. Return story and default first entry."""
-        story = Story(self, *args, **kwargs)
-        self._stories.append(story)
-        return story, story.entries[0]  # TODO: provide get() or magic method for slicing
+        entry = Entry(*args, **kwargs)  # NOTE: not sure this is good
+        self._entries[entry.uuid] = entry
+        return entry
 
     def delete_story(self, story):
         """Delete story by id suffix. Doesn't require the entire id as long as 
         it's unique"""
-        raise NotImplementedError   
-
-    @property
-    def stories(self):
-        """List all available stories.
-        # NOTE: Should merge with `search()` and provide no filter?"""
-        return list(self._stories)
-
-
-class Story:
-    """A group of 1 or more Entries that create a narrative or should otherwise
-    be sequenced."""
-
-    def __init__(
-        self,
-        timeline: Timeline,
-        start_date: str = None,
-        title: str = None,
-    ):
-        self.timeline = timeline
-        self.uuid = uuid()
-        title = today_str() if not title else title
-        self.title = title
-        # TODO: make property; get from min entry date
-        start_date = today_str() if not start_date else start_date
-        self.start_date = parse_datetime_local_tz(start_date)
-        self._entries = []
-        self._entries.append(Entry(self, date=start_date))  # default first entry
-
-    @property
-    def entries(self):
-        """Return all entries
-        # TODO: sort by date"""
-        return list(self._entries)
-
-    def add_entry(self, *args, **kwargs):
-        entry = Entry(story=self, *args, **kwargs)
-        self._entries.append(entry)
-        return entry
-
-    def __repr__(self):
-        return f'<Story uuid: {self.uuid} title: "{self.title}" num_entries: {len(self.entries)}>'
+        raise NotImplementedError
 
 
 class Entry:
-    """An component of a story. Where all content is stored/linked"""
+    """An entry on the timeline; where all content is stored and linked."""
 
-    def __init__(self, story: Story, date: str, body: str = ""):
-        self.story = story
+    def __init__(
+        self,
+        start_dt: str = None,
+        end_dt: str = None,
+        title: str = None,
+        body: str = None
+    ):
+        now = pendulum.now()
+        self.start_dt = parse_dt_local_tz(start_dt) if start_dt else now
+        self.end_dt = parse_dt_local_tz(end_dt) if end_dt else now
+        self.created_dt = now
+        self.modified_dt = now
+        self.title = title if title else self.start_dt.to_day_datetime_string()
         self.body = body
-        self.uuid = uuid()
-        self.date = parse_datetime_local_tz(date) if date else pendulum.today()
+        self.uuid = str(uuid())
 
     def __repr__(self):
-        return f'<Entry uuid: {self.uuid} date: {self.date.to_datetime_string()} body: "{self.body[:10]}">'
+        return f'<Entry uuid: {self.uuid} start_dt: {self.start_dt.to_datetime_string()} body: "{self.body}">'
 
 
 # NOTE: dev only
