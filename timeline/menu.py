@@ -97,9 +97,16 @@ class Menu:
         console.print(f"Body:\n{entry.body}")
         console.rule()
 
-    def search_entries(self):
-        # TODO: implement
-        raise NotImplementedError
+    def search_entries(self, pattern: str=None):
+        """Find all Entries matching a regex pattern"""
+        if not pattern:
+            pattern = prompt.ask("Match pattern")
+        
+        entries = self.timeline.search_entries(pattern)
+        if not entries:
+            console.print("No matching entries found.")
+        else:
+            self.show_entries(entries)
 
     def add_entry(self):
         """Create new entry and call up editor (Vim)
